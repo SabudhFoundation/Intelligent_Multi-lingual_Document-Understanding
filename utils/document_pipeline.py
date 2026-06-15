@@ -9,7 +9,7 @@ import sqlite3
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from keywords import JOB_ROLE_WORDS, SKILL_WORDS
+from .keywords import JOB_ROLE_WORDS, SKILL_WORDS
 from .nlp_utils import detect_language, normalize_language, normalize_text, tokenize_words
 
 

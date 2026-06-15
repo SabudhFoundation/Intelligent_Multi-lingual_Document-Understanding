@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from utils.document_pipeline import PipelineConfig, build_arg_parser, result_to_console, run_pipeline
+from utils.document_pipeline import (
+    PipelineConfig,
+    build_arg_parser,
+    result_to_console,
+    run_pipeline,
+)
 
 
 def main() -> None:
@@ -16,6 +21,7 @@ def main() -> None:
             encryption_key=args.encryption_key,
         )
     )
+
     print(result_to_console(result))
 
 

@@ -52,4 +52,4 @@ pip install pytesseract Pillow
 ```
 
 The notebooks contain model-training experiments for LayoutLMv3 OCR/form understanding and XLM-R token classification. The runnable pipeline is intentionally lightweight so it works without downloading large models.
-
+--For running must write : python main.py file path
