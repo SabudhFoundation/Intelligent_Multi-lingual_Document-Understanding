@@ -9,7 +9,7 @@ import sqlite3
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
+from keywords import JOB_ROLE_WORDS, SKILL_WORDS
 from .nlp_utils import detect_language, normalize_language, normalize_text, tokenize_words
 
 
@@ -17,32 +17,6 @@ EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
 PHONE_PATTERN = re.compile(r"(?<!\d)(?:\+?\d[\d\s().-]{7,}\d)(?!\d)")
 PRICE_PATTERN = re.compile(r"(?:Rs\.?|INR|₹|\$|USD)\s?\d[\d,]*(?:\.\d{1,2})?", re.I)
 INVOICE_PATTERN = re.compile(r"\b(?:invoice|inv)[\s#:.-]*([A-Za-z0-9-]*\d[A-Za-z0-9-]*)", re.I)
-SKILL_WORDS = {
-    "python",
-    "java",
-    "sql",
-    "excel",
-    "machine learning",
-    "nlp",
-    "ocr",
-    "transformers",
-    "pytorch",
-    "tensorflow",
-    "aws",
-    "azure",
-    "docker",
-    "kubernetes",
-}
-JOB_ROLE_WORDS = {
-    "developer",
-    "engineer",
-    "analyst",
-    "manager",
-    "consultant",
-    "designer",
-    "scientist",
-    "accountant",
-}
 
 
 @dataclass

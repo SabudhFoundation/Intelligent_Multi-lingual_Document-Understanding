@@ -1,0 +1,26 @@
+SKILL_WORDS = {
+    "python",
+    "java",
+    "sql",
+    "excel",
+    "machine learning",
+    "nlp",
+    "ocr",
+    "transformers",
+    "pytorch",
+    "tensorflow",
+    "aws",
+    "azure",
+    "docker",
+    "kubernetes",
+}
+JOB_ROLE_WORDS = {
+    "developer",
+    "engineer",
+    "analyst",
+    "manager",
+    "consultant",
+    "designer",
+    "scientist",
+    "accountant",
+}
