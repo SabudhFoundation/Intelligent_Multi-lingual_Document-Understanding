@@ -4,19 +4,20 @@ import json
 from sqlalchemy.orm import Session
 
 from .config import get_settings
-from .crud import find_context_records
-from .models import CsvRecord
+from .crud import find_context_documents
+from .models import ProcessedDocument
 
 
-SYSTEM_PROMPT = """You answer user questions using only the provided PostgreSQL CSV rows.
-If the rows do not contain the answer, say that the database does not have enough matching data.
-Keep the answer concise and mention relevant record ids when useful."""
+SYSTEM_PROMPT = """You answer user questions using only the provided processed documents.
+Use the document metadata, summary, and extracted text to answer the question.
+If the documents do not contain the answer, say that the repository does not have enough information.
+Keep the answer concise and mention relevant document ids when useful."""
 
 
 def answer_question(db: Session, question: str, limit: int = 8) -> tuple[str, list[int], bool]:
-    records = list(find_context_records(db, question, limit=limit))
-    record_ids = [record.id for record in records]
-    context = _records_to_context(records)
+    documents = list(find_context_documents(db, question, limit=limit))
+    document_ids = [document.id for document in documents]
+    context = _documents_to_context(documents)
 
     settings = get_settings()
     if settings.openai_api_key:
@@ -27,7 +28,7 @@ def answer_question(db: Session, question: str, limit: int = 8) -> tuple[str, li
             prompt = ChatPromptTemplate.from_messages(
                 [
                     ("system", SYSTEM_PROMPT),
-                    ("human", "Question: {question}\n\nRows:\n{context}"),
+                    ("human", "Question: {question}\n\nDocuments:\n{context}"),
                 ]
             )
             model = ChatOpenAI(
@@ -36,40 +37,43 @@ def answer_question(db: Session, question: str, limit: int = 8) -> tuple[str, li
                 temperature=0,
             )
             response = (prompt | model).invoke({"question": question, "context": context})
-            return str(response.content), record_ids, True
+            return str(response.content), document_ids, True
         except Exception as exc:
             return (
-                f"LangChain model call failed: {exc}. Matching database rows: {context or 'none'}",
-                record_ids,
+                f"LangChain model call failed: {exc}. Matching documents: {context or 'none'}",
+                document_ids,
                 False,
             )
 
-    return _fallback_answer(question, records), record_ids, False
+    return _fallback_answer(question, documents), document_ids, False
 
 
-def _records_to_context(records: list[CsvRecord]) -> str:
+def _documents_to_context(documents: list[ProcessedDocument]) -> str:
     lines = []
-    for record in records:
+    for document in documents:
         payload = {
-            "id": record.id,
-            "source_file": record.source_file,
-            "row_number": record.row_number,
-            "data": record.data,
+            "id": document.id,
+            "source_file": document.source_file,
+            "document_type": document.document_type,
+            "language": document.language,
+            "summary": document.summary,
+            "entities": document.entities,
         }
         lines.append(json.dumps(payload, ensure_ascii=False))
     return "\n".join(lines)
 
 
-def _fallback_answer(question: str, records: list[CsvRecord]) -> str:
-    if not records:
-        return "I could not find matching rows in PostgreSQL for that question."
+def _fallback_answer(question: str, documents: list[ProcessedDocument]) -> str:
+    if not documents:
+        return "I could not find matching processed documents for that question."
 
     preview = []
-    for record in records[:5]:
-        fields = ", ".join(f"{key}: {value}" for key, value in list(record.data.items())[:6])
-        preview.append(f"Record {record.id} from {record.source_file} row {record.row_number}: {fields}")
+    for document in documents[:5]:
+        preview.append(
+            f"Document {document.id} from {document.source_file}: type={document.document_type}, language={document.language}, summary={document.summary[:120]}"
+        )
 
     return (
         "OPENAI_API_KEY is not configured, so I used keyword matching instead of an LLM. "
-        "Here are the closest rows:\n" + "\n".join(preview)
+        "Here are the closest documents:\n" + "\n".join(preview)
     )

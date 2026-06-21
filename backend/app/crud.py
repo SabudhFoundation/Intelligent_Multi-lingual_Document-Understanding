@@ -67,10 +67,62 @@ def list_records(
     return total, list(items)
 
 
-def find_context_records(db: Session, question: str, limit: int = 8) -> list[CsvRecord]:
+def add_processed_document(db: Session, document: 'ProcessedDocument') -> 'ProcessedDocument':
+    db.add(document)
+    db.flush()
+    return document
+
+
+def build_processed_documents_query(source_file: str | None = None, search: str | None = None) -> Select[tuple['ProcessedDocument']]:
+    from .models import ProcessedDocument
+
+    query = select(ProcessedDocument)
+    if source_file:
+        query = query.where(ProcessedDocument.source_file == source_file)
+    if search:
+        pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                ProcessedDocument.searchable_text.ilike(pattern),
+                ProcessedDocument.source_file.ilike(pattern),
+                ProcessedDocument.summary.ilike(pattern),
+            )
+        )
+    return query
+
+
+def list_processed_documents(
+    db: Session,
+    source_file: str | None = None,
+    search: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[int, list['ProcessedDocument']]:
+    from .models import ProcessedDocument
+
+    base_query = build_processed_documents_query(source_file=source_file, search=search)
+    total = db.scalar(select(func.count()).select_from(base_query.subquery())) or 0
+    items = db.scalars(base_query.order_by(ProcessedDocument.id.desc()).limit(limit).offset(offset)).all()
+    return total, list(items)
+
+
+def get_processed_document(db: Session, document_id: int) -> 'ProcessedDocument' | None:
+    from .models import ProcessedDocument
+
+    return db.scalar(select(ProcessedDocument).where(ProcessedDocument.id == document_id))
+
+
+def find_context_documents(db: Session, question: str, limit: int = 8) -> list['ProcessedDocument']:
+    from .models import ProcessedDocument
+
     terms = [term.strip() for term in question.split() if len(term.strip()) > 2]
     if not terms:
-        return db.scalars(select(CsvRecord).order_by(CsvRecord.id.desc()).limit(limit)).all()
+        return db.scalars(select(ProcessedDocument).order_by(ProcessedDocument.id.desc()).limit(limit)).all()
 
-    filters = [CsvRecord.searchable_text.ilike(f"%{term}%") for term in terms[:8]]
-    return db.scalars(select(CsvRecord).where(or_(*filters)).order_by(CsvRecord.id.desc()).limit(limit)).all()
+    filters = [ProcessedDocument.searchable_text.ilike(f"%{term}%") for term in terms[:8]]
+    return db.scalars(
+        select(ProcessedDocument)
+        .where(or_(*filters))
+        .order_by(ProcessedDocument.id.desc())
+        .limit(limit)
+    ).all()

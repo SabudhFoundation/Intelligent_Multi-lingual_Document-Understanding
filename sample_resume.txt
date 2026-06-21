@@ -1,0 +1,31 @@
+John Doe
+Email: john.doe@example.com
+Phone: +1-555-123-4567
+Location: New York, NY
+
+Professional Summary
+Experienced software developer with 5 years of expertise in web development and cloud technologies.
+
+Work Experience
+Senior Software Developer at Tech Corp (2022-Present)
+- Developed and maintained microservices using Python and FastAPI
+- Managed AWS infrastructure and deployment pipelines
+- Led a team of 3 junior developers
+
+Junior Developer at StartUp Inc (2021-2022)
+- Built RESTful APIs using Python and Flask
+- Collaborated with cross-functional teams
+
+Education
+Bachelor of Science in Computer Science
+University of Technology (2020)
+
+Skills
+- Python, JavaScript, SQL
+- FastAPI, Django, React
+- AWS, Docker, Kubernetes
+- Git, CI/CD pipelines
+
+Languages
+- English (Fluent)
+- Hindi (Native)

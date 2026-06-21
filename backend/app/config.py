@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "Multilingual Document Backend"
     database_url: str = Field(
-        default="postgresql+psycopg://postgres:postgres@localhost:5432/multilingual_docs",
+        default="sqlite:///./multilingual_docs.db",
         validation_alias="DATABASE_URL",
     )
     openai_api_key: str | None = Field(default=None, validation_alias="OPENAI_API_KEY")
